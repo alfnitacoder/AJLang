@@ -1,0 +1,4 @@
+ajlang
+*.o
+._*
+.DS_Store

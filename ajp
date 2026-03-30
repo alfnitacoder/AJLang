@@ -1,0 +1,43 @@
+#!/bin/sh
+# ajp — AJLANG package manager (like pip for Python). Stub for future install/list/remove.
+set -e
+AJP_ROOT="${AJLANG_HOME:-$HOME/.ajlang}"
+AJP_LIB="$AJP_ROOT/lib"
+
+usage() {
+    printf '%s\n' \
+        "ajp — AJLANG package manager" \
+        "" \
+        "Usage: ajp <command> [args]" \
+        "" \
+        "Commands:" \
+        "  help, -h, --help    Show this message" \
+        "  home                Print library root ($AJP_LIB)" \
+        "" \
+        "Planned: install, uninstall, list (not implemented yet)." \
+        "Packages would live under: $AJP_LIB"
+}
+
+cmd_home() {
+    mkdir -p "$AJP_LIB"
+    printf '%s\n' "$AJP_LIB"
+}
+
+case "${1:-}" in
+    help|-h|--help|"")
+        usage
+        ;;
+    home)
+        cmd_home
+        ;;
+    install|uninstall|list)
+        echo "ajp: '$1' is not implemented yet." >&2
+        echo "ajp: Library path will be: $AJP_LIB" >&2
+        exit 2
+        ;;
+    *)
+        echo "ajp: unknown command '$1'" >&2
+        echo "Try: ajp help" >&2
+        exit 1
+        ;;
+esac
