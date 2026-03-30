@@ -12,6 +12,7 @@ typedef enum {
     AST_PRINT,
     AST_READ,
     AST_EXEC,
+    AST_IMPORT,
     AST_IF,
     AST_WHILE,
     AST_BLOCK
@@ -40,6 +41,7 @@ typedef struct ASTNode {
             struct ASTNode* cmd;
             char* var;
         } exec_stmt;
+        char* import_path;
         struct {
             struct ASTNode* cond;
             struct ASTNode* body;

@@ -68,6 +68,7 @@ Token* tokenize(const char* source) {
             else if (strcmp(id, "print") == 0) type = TOKEN_PRINT;
             else if (strcmp(id, "read") == 0) type = TOKEN_READ;
             else if (strcmp(id, "exec") == 0) type = TOKEN_EXEC;
+            else if (strcmp(id, "import") == 0) type = TOKEN_IMPORT;
 
             Token* token = create_token(type, id);
             if (!head) head = token;

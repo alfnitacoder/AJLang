@@ -6,7 +6,7 @@ AJLang is a small **teaching-style** scripting language: a C interpreter with a 
 
 - **Learn how interpreters work** — the codebase is small enough to read end-to-end (`src/tokenizer.c`, `src/parser.c`, `src/evaluator.c`).
 - **Glue and experiments** — quick linear scripts with `print`, integer input, control flow, and **`exec`** to reuse anything the shell can run.
-- **Not a replacement for Python, Bash, or Lua** — it has no package ecosystem, no standard library to speak of, and no `import` yet. Use those when you need real libraries or large programs.
+- **Not a replacement for Python, Bash, or Lua** — tiny stdlib, no PyPI-style ecosystem. Use those when you need large programs or heavy libraries.
 
 ## Build and run
 
@@ -29,6 +29,7 @@ The binary is `ajlang` in the project root (ignored by git after build). Require
 | **Control flow** | `if condition { ... }`, `while condition { ... }` — conditions are expressions (non-zero int is true) |
 | **Comments** | `//` to end of line |
 | **Shell** | `exec "command", outvar;` — runs `command` via the shell, captures **stdout** into string variable `outvar` (stderr unless redirected with e.g. `2>&1`) |
+| **Import** | `import "path.aj";` — loads and runs another file in the **same** variable environment (see below) |
 
 ### Command-line arguments
 
@@ -54,18 +55,28 @@ See `examples/check.aj` for usage.
 | `examples/calculator.aj` | Menu loop |
 | `examples/shell.aj` | `exec` and OS output |
 | `examples/check.aj` | `argc` / `arg0`… |
+| `examples/import_demo.aj` | `import` of `lib/demo.aj` |
+| `lib/demo.aj` | Tiny module for import demos |
 
-## Libraries and “import”
+## `import`
 
-**There is no `import` statement yet** — the language cannot load another `.aj` file from inside a script.
+Syntax:
 
-Ways to reuse logic today:
+```text
+import "relative/or/absolute/path.aj";
+```
 
-1. **Copy and paste** shared `.aj` snippets, or **concatenate** files before running (e.g. with the shell) if you control the build step.
-2. **`exec "…", result;`** — call installed CLI tools, scripts in other languages, or shell functions; read their stdout into a string and branch on it with `print` / `if` as needed.
-3. **`ajp`** — the **AJLang package manager** name is reserved for a future workflow (`./ajp help`). Planned layout: libraries under `$HOME/.ajlang/lib` (or `$AJLANG_HOME/lib`). **`install` / `list` are not implemented yet**; once they are, the interpreter would still need an **`import`** (or `load`) feature to actually pull code into a program.
+Semantics:
 
-If you add `import` to the interpreter, a typical design is: resolve a module path under `$(ajp home)`, read the file, parse it into an AST, and run it in the current environment (or a nested scope). Until then, treat **the shell + `exec`** as your “foreign library” interface.
+- The imported file is **tokenized, parsed, and evaluated** when the `import` statement runs.
+- It shares the **same global environment** as the main script (`let` / assignments in the module are visible after the import).
+- **Resolution order** for a non-absolute path:
+  1. Relative to the directory of the file that contains the `import` (usually the current `.aj` file; for nested imports, the **importing** file’s directory).
+  2. If not found: **`$AJLANG_HOME/lib/`** *logical path* if `AJLANG_HOME` is set, else **`$HOME/.ajlang/lib/`**.
+- **Absolute paths** (`"/tmp/x.aj"`) are used as-is.
+- **Circular imports** (A → B → A) are detected and rejected.
+
+Other reuse options: copy/paste snippets, **`exec`**, and (when implemented) **`ajp install`** dropping files under `$(./ajp home)`.
 
 ## `ajp` (package manager stub)
 
@@ -76,7 +87,7 @@ If you add `import` to the interpreter, a typical design is: resolve a module pa
 
 ## Limitations (honest list)
 
-- No functions, classes, arrays, or `import`
+- No functions, classes, or arrays; no separate module scope (import runs in the global environment)
 - No `==`, `&&`, `||` in the grammar (workarounds: range checks, nested `if`, or shell via `exec`)
 - String operations are minimal (no string `+` in expressions)
 - `read` reads integers only, not arbitrary text lines
@@ -86,10 +97,11 @@ If you add `import` to the interpreter, a typical design is: resolve a module pa
 
 ```
 include/     headers
-src/         tokenizer, parser, evaluator, main
+src/         tokenizer, parser, evaluator, main, io (read_file)
+lib/         optional `.aj` modules for `import`
 examples/    sample .aj programs
 Makefile
 ajp          package manager CLI (stub)
 ```
 
-Pull requests that add **`import`**, **`==`**, or **`ajp install`** are natural next steps for growing the project.
+Pull requests that add **`==`**, **`ajp install`**, or **function** syntax are natural next steps for growing the project.

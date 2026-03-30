@@ -149,6 +149,17 @@ ASTNode* parse_statement() {
         node->exec_stmt.cmd = cmd;
         node->exec_stmt.var = var;
         return node;
+    } else if (match(TOKEN_IMPORT)) {
+        if (!current_token || current_token->type != TOKEN_STRING) {
+            printf("Syntax error: import requires a string path\n");
+            exit(1);
+        }
+        char* path = strdup(current_token->value);
+        advance();
+        expect(TOKEN_SEMICOLON);
+        ASTNode* node = create_ast_node(AST_IMPORT);
+        node->import_path = path;
+        return node;
     } else if (match(TOKEN_IF)) {
         ASTNode* cond = parse_expr();
         expect(TOKEN_LBRACE);
@@ -225,6 +236,9 @@ void free_ast(ASTNode* node) {
         case AST_EXEC:
             free_ast(node->exec_stmt.cmd);
             free(node->exec_stmt.var);
+            break;
+        case AST_IMPORT:
+            free(node->import_path);
             break;
         case AST_BLOCK:
             for (int i = 0; i < node->block.count; i++) {

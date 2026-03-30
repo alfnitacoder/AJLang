@@ -1,4 +1,5 @@
 // Example AJLANG script
+import module.aj
 
 let x = 5;
 let y = x + 3;

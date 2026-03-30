@@ -10,6 +10,7 @@ typedef enum {
     TOKEN_PRINT,
     TOKEN_READ,
     TOKEN_EXEC,
+    TOKEN_IMPORT,
     TOKEN_PLUS,
     TOKEN_MINUS,
     TOKEN_MUL,

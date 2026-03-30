@@ -30,6 +30,7 @@ typedef struct {
 } Env;
 
 Value eval_expr(ASTNode* node, Env* env);
+void evaluator_set_script_for_imports(const char* main_script_path);
 void evaluate(ASTNode* node, Env* env);
 void env_init_cli_args(Env* env, int cli_argc, char** cli_argv);
 void free_env(Env* env);
